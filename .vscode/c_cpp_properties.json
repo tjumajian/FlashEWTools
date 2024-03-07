@@ -68,10 +68,7 @@
                 "D:/Qt/5.15.2/mingw81_32/include/QtXml",
                 "D:/Qt/5.15.2/mingw81_32/include/QtXmlPatterns",
                 "D:/Qt/5.15.2/mingw81_32/include/QtSerialPort",
-                "D:/CB/wtm2100/build-WTM2100Test-Desktop_Qt_5_15_2_MinGW_64_bit-CP2/SerialPortTest",
-                "D:/CB/wtm2100/build-WTM2100Test-Desktop_Qt_5_15_2_MinGW_64_bit-CP2/SettingsEditor_Tester",
                 "D:/CB/wtm2100/build-WTM2100Test-Desktop_Qt_5_15_2_MinGW_64_bit-Flash/FlashWidget24site",
-                "${workspaceRoot}/SerialPortTest",
                 "${workspaceRoot}/**"
                 //"${workspaceFolder}/src/api",
                 //"${workspaceFolder}/src/utils"
