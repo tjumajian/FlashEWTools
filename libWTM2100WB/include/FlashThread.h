@@ -23,21 +23,12 @@ public:
     void GetSPIfuncs(QLibrary *libmpsse);
     void libtunnelInit(QLibrary *libtunnel);
     bool boolInitLibFuncs();
-    ChannelConfig* SPIconfigAD();
-    ChannelConfig* SPIconfigBD();
-    bool openUart(const QString &uart1, const QString &uart2);
-    bool openUartNoParam();
-    bool closeUart();
-    int SPIcommunicate();
     void setSiteDir(const QDir &dir);
     QDir getDirsite();
+    bool openUart(const QString &uart1, const QString &uart2);
+    bool closeUart();
     void setReadyArr(const uint32_t *ReadyArray);
-    QList<int> getSelectedAddresses(const uint32_t* readyArray, int arraySize);
-    uint32_t getHexAddress(int address);
-    uint32_t getHexAddressAD(int address);
-    uint32_t getSiteHex(int site);
 
-    // void initLibMPSSE();
     bool configSPI(int pin1, int pin2, const QString &path);
     void resetPort();
 
@@ -50,8 +41,6 @@ Q_SIGNALS:
 protected:
     void run() override;
 private:
-    static FT_STATUS read_byte(uint8_t slaveAddress, uint8_t address, uint16_t *data);
-    static FT_STATUS write_byte(uint8_t slaveAddress, uint8_t address, uint16_t data);
     uint8_t w25qxx_read_id(FT_HANDLE handle);
     uint8_t w25qxx_erase_byte(FT_HANDLE handle);
     uint8_t w25qxx_write_byte(FT_HANDLE handle, const QString& filePath);

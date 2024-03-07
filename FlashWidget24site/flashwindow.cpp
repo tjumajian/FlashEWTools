@@ -860,7 +860,7 @@ void FlashWindow::logPrint2(const QString& message)
         format.setForeground(Qt::blue);
         cursor.mergeCharFormat(format);
     }
-    if (message.contains("成功")) {
+    if (message.contains("successful")) {
         QTextCharFormat format;
         format.setForeground(Qt::green);
         cursor.mergeCharFormat(format);
@@ -910,8 +910,6 @@ QString FlashWindow::findBinFile()
 
 void FlashWindow::onThreadFinished(bool is_finished)
 {
-    // // 恢复窗口操作
     // setEnabled(is_finished);
-    // // 恢复鼠标光标
     // QApplication::restoreOverrideCursor();
 }

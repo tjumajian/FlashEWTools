@@ -99,11 +99,6 @@ FT_STATUS (*Mid_CyclePort)(FT_HANDLE);
 FlashThread::FlashThread( QObject *parent)
     : QThread{parent}
 {
-//    int i = 0;
-//    for (; i < MAX_SITE_SIZE; i++)
-//    {
-//        s_ReadyArray[i] = 1;
-//    }
     if (s_libraryMPSSE == nullptr)
     {
         QString mpsseDllPath = Settings::staticInstance()->value("MPSSEDllPath").toString();
@@ -246,50 +241,6 @@ void FlashThread::setReadyArr(const uint32_t *ReadyArray)
     set_ready_arrFlash(m_Arr);
 }
 
-QList<int> FlashThread::getSelectedAddresses(const uint32_t* readyArray, int arraySize)
-{
-    QList<int> selectedAddresses;
-    for (int i = 0; i < arraySize; i++)
-    {
-        if (readyArray[i] == 1)
-        {
-            selectedAddresses.append(i);
-        }
-    }
-    return selectedAddresses;
-}
-
-uint32_t FlashThread::getHexAddress(int address)
-{
-    std::stringstream ss;
-    ss << "0x" << std::setfill('0') << std::setw(8) << std::hex << ((static_cast<uint32_t>(address) <<24) | 0x00FF00FF);
-    
-    uint32_t result;
-    ss >> std::hex >> result;
-    
-    return result;
-}
-
-uint32_t FlashThread::getHexAddressAD(int address)
-{
-    std::stringstream ss;
-    ss << "0x" << std::setfill('0') << std::setw(8) << std::hex << ((static_cast<uint32_t>(address) <<24) | 0xEFFB00FB);
-    
-    uint32_t result;
-    ss >> std::hex >> result;
-    
-    return result;
-}
-
-uint32_t FlashThread::getSiteHex(int site)
-{
-    std::stringstream ss;
-    ss << std::hex << site;
-    uint32_t result;
-    ss >> result;
-    return result;
-}
-
 void FlashThread::GetSPIfuncs(QLibrary *libmpsse)
 {
     Init_libMPSSE = reinterpret_cast<Init_libMPSSE_ptr>(libmpsse->resolve("Init_libMPSSE"));
@@ -335,8 +286,8 @@ QDir FlashThread::getDirsite()
 
 FlashThread::~FlashThread()
 {
-    wait(); // 等待线程执行完毕
-    deleteLater(); // 延迟删除线程对象
+    wait();
+    deleteLater();
 }
 
 void FlashThread::start(const QString &uart1, const QString &uart2)
@@ -348,28 +299,6 @@ void FlashThread::start(const QString &uart1, const QString &uart2)
 
 void FlashThread::run()
 {
-    // bool ok = openUart(m_uart1Name, m_uart2Name);
-    // if (!ok)
-    // {
-    //     Q_EMIT completed();
-    //     return;
-    // }
-    // closeUart();
-    Init_libMPSSE();
-    SPIcommunicate();
-
-    Q_EMIT completed();
-}
-
-bool FlashThread::openUartNoParam()
-{
-    openUart(m_uart1Name, m_uart2Name);
-    return true;
-}
-
-bool FlashThread::boolInitLibFuncs()
-{
-    return true;
 }
 
 bool FlashThread::openUart(const QString &uart1, const QString &uart2)
@@ -449,32 +378,10 @@ bool FlashThread::closeUart()
     return true;
 }
 
-FT_STATUS FlashThread::read_byte(uint8_t slaveAddress, uint8_t address, uint16_t *data)
+bool FlashThread::boolInitLibFuncs()
 {
-
+    return true;
 }
-
-FT_STATUS FlashThread::write_byte(uint8_t slaveAddress, uint8_t address, uint16_t data)
-{
-
-}
-
-ChannelConfig* FlashThread::SPIconfigAD()
-{
-
-}
-
-ChannelConfig* FlashThread::SPIconfigBD()
-{
-
-}
-
-// void FlashThread::initLibMPSSE()
-// {
-//     LibWTM2100WB::print("T");
-//     QString message = QString("T");
-//     emit logMessage(message);
-// }
 
 void FlashThread::resetPort()
 {
@@ -503,7 +410,7 @@ void FlashThread::resetPort()
         return;
     }
 
-    status = SPI_OpenChannel(0, &handlea); // 假设选择第1个SPI通道
+    status = SPI_OpenChannel(0, &handlea);
     if (status != FT_OK) {
         LibWTM2100WB::print("Error opening SPI channel.");
         QString opens1 = QString("Error opening SPI channel.");
@@ -513,7 +420,7 @@ void FlashThread::resetPort()
     }
 
     FT_HANDLE handleb;
-    status = SPI_OpenChannel(1, &handleb); // 假设选择第2个SPI通道
+    status = SPI_OpenChannel(1, &handleb);
     if (status != FT_OK) {
         LibWTM2100WB::print("Error opening SPI channel.");
         QString opens2 = QString("Error opening SPI channel.");
@@ -678,8 +585,8 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     }
 
     // 设置AC0、AC1
-    uint8_t dir = 0xFF; // 方向，每一位代表一个引脚，1表示输出，0表示输入
-    uint8_t value = 0xFF; // 输出值，每一位代表一个引脚的输出值
+    uint8_t dir = 0xFF;
+    uint8_t value = 0xFF;
 
     // clr ac1
     // pin1 = 1;
@@ -696,8 +603,8 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
 
 
     // erase flash[i]
-    LibWTM2100WB::print("擦除flash%d\r\n", pin2+1);
-    QString erasePins0 = QString("\n①擦除flash%1.\n擦除中...").arg(pin2+1);
+    LibWTM2100WB::print("Erase flash%d\r\n", pin2+1);
+    QString erasePins0 = QString("\n①Erase flash%1.\nEras...").arg(pin2+1);
     emit logMessage(erasePins0);
     QString erasePinsIng0 = QString("···");
     emit logMessage(erasePinsIng0);
@@ -706,8 +613,8 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     w25qxx_erase_byte(handleb);
     this_thread::sleep_for(chrono::milliseconds(2000));
     // test flash[i]
-    LibWTM2100WB::print("检测flash%d 是否正确擦除\r\n", pin2+1);
-    QString readAgainPins0 = QString("检测flash%1 是否正确擦除.").arg(pin2+1);
+    LibWTM2100WB::print("Check flash%d is erased correctly.\r\n", pin2+1);
+    QString readAgainPins0 = QString("Check flash%1 is erased correctly.").arg(pin2+1);
     emit logMessage(readAgainPins0);
     Mid_SetGPIOLow(handlea, pin2&0xff, dir);
     this_thread::sleep_for(chrono::milliseconds(100));
@@ -716,11 +623,11 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     QString regErase0 = QString("0x%1").arg(regErase, 0, 16);
     if (regErase0 != "0xff")
     {
-        LibWTM2100WB::print("flash%d 擦除失败!\r\n", pin2+1);
-        emit logMessage(QString("flash%1 擦除失败!").arg(pin2+1));
+        LibWTM2100WB::print("flash%d erase failed!\r\n", pin2+1);
+        emit logMessage(QString("flash%1 erase failed!").arg(pin2+1));
         emit failedSignal(true);
         // emit manuFinish(true);
-        // 释放资源
+        // release
         SPI_CloseChannel(handlea);
         SPI_CloseChannel(handleb);
         Cleanup_libMPSSE();
@@ -731,14 +638,14 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     }
     else
     {
-        LibWTM2100WB::print("flash%d 擦除成功!\r\n", pin2+1);
-        emit logMessage(QString("flash%1 擦除成功!").arg(pin2+1));
+        LibWTM2100WB::print("flash%d erase successfully!\r\n", pin2+1);
+        emit logMessage(QString("flash%1 erase successfully!").arg(pin2+1));
     }
 
 
     // write flash[i]
-    LibWTM2100WB::print("编写flash%d\r\n", pin2+1);
-    QString writePins0 = QString("\n②编写flash%1.\n编写中...").arg(pin2+1);
+    LibWTM2100WB::print("Program flash%d\r\n", pin2+1);
+    QString writePins0 = QString("\n②Program flash%1.\nProgramming...").arg(pin2+1);
     emit logMessage(writePins0);
     QString writePinsIng0 = QString("···");
     emit logMessage(writePinsIng0);
@@ -747,8 +654,8 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     w25qxx_write_byte(handleb, path);
     this_thread::sleep_for(chrono::milliseconds(2000));
     // test flash[i]
-    LibWTM2100WB::print("检测flash%d 是否正确编写\r\n", pin2+1);
-    QString writeTest0 = QString("检测flash%1 是否正确编写.").arg(pin2+1);
+    LibWTM2100WB::print("Check flash%d is programmed correctly.\r\n", pin2+1);
+    QString writeTest0 = QString("Check flash%1 is programmed correctly.").arg(pin2+1);
     emit logMessage(writeTest0);
     Mid_SetGPIOLow(handlea, pin2&0xff, dir);
     this_thread::sleep_for(chrono::milliseconds(100));
@@ -757,8 +664,8 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     QString regWrite0 = QString("0x%1").arg(regWrite, 0, 16);
     if (regWrite0 == "0xff")
     {
-        LibWTM2100WB::print("flash%d 编写失败!\r\n", pin2+1);
-        emit logMessage(QString("flash%1 编写失败!").arg(pin2+1));
+        LibWTM2100WB::print("flash%d program failed!\r\n", pin2+1);
+        emit logMessage(QString("flash%1 program failed!").arg(pin2+1));
         emit failedSignal(true);
         // emit manuFinish(true);
         // 释放资源
@@ -772,14 +679,14 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     }
     else
     {
-        LibWTM2100WB::print("flash%d 编写成功!\r\n", pin2+1);
-        emit logMessage(QString("flash%1 编写成功!").arg(pin2+1));
+        LibWTM2100WB::print("flash%d program successfully!\r\n", pin2+1);
+        emit logMessage(QString("flash%1 program successfully!").arg(pin2+1));
     }
 
 
     // verify flash[i]
-    LibWTM2100WB::print("校验flash%d\r\n", pin2+1);
-    QString verifyPins0 = QString("\n③校验flash%1.\n检验中...").arg(pin2+1);
+    LibWTM2100WB::print("Check flash%d\r\n", pin2+1);
+    QString verifyPins0 = QString("\n③Check flash%1.\nChecking...").arg(pin2+1);
     emit logMessage(verifyPins0);
     QString verifyPinsIng0 = QString("···");
     emit logMessage(verifyPinsIng0);
@@ -789,11 +696,11 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     this_thread::sleep_for(chrono::milliseconds(2000));
     if (!is_successEW)
     {
-        LibWTM2100WB::print("flash%d 检验失败!\r\n", pin2+1);
-        emit logMessage(QString("flash%1 检验失败!").arg(pin2+1));
+        LibWTM2100WB::print("flash%d check failed!\r\n", pin2+1);
+        emit logMessage(QString("flash%1 check failed!").arg(pin2+1));
         emit failedSignal(true);
         // emit manuFinish(true);
-        // 释放资源
+        // release
         SPI_CloseChannel(handlea);
         SPI_CloseChannel(handleb);
         Cleanup_libMPSSE();
@@ -804,365 +711,20 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     }
     else
     {
-        LibWTM2100WB::print("flash%d 检验成功!\r\n", pin2+1);
-        emit logMessage(QString("flash%1 检验成功!").arg(pin2+1));
+        LibWTM2100WB::print("flash%d check successfully!\r\n", pin2+1);
+        emit logMessage(QString("flash%1 check successfully!").arg(pin2+1));
     }
 
-    
-    // // read again
-    // LibWTM2100WB::print("Read FLASH pin%d\r\n", pin2);
-    // QString readTriplePins0 = QString("Read FLASH pin%1 again.").arg(pin2);
-    // emit logMessage(readTriplePins0);
-    // Mid_SetGPIOLow(handlea, 0x00, dir);
-    // Mid_SetGPIOLow(handlea, pin2&0xff, dir);
-    // this_thread::sleep_for(chrono::milliseconds(100));
-    // uint8_t regAgain = w25qxx_read_byte(handleb);
-    // QString regAgain0 = QString("0x%1").arg(regAgain, 0, 16);
-    // if (regAgain0 == "0xff" || regAgain0 == "0x0")
-    // {
-    //     emit failedSignal(true);
-    // }
-    // this_thread::sleep_for(chrono::milliseconds(2000));
-
-    // reset gpio
-    // Mid_CyclePort(handlea);
-    // Mid_CyclePort(handleb);
-    // LibWTM2100WB::print("Reset ft2232 GPIOs.");
-    // QString resetPins = QString("Reset ft2232 GPIOs.\n");
-    // emit logMessage(resetPins);
-    // 关闭SPI通道
+    // close SPI channels
     SPI_CloseChannel(handlea);
     SPI_CloseChannel(handleb);
-    // 调用清理函数
     Cleanup_libMPSSE();
-    // // 卸载DLL库
-    // s_libraryMPSSE->unload();
     LibWTM2100WB::print("End.");
     QString writePinsEnd0 = QString("End.\n");
     emit logMessage(writePinsEnd0);
     // emit manuFinish(true);
 
     return true;
-}
-
-int FlashThread::SPIcommunicate()
-{
-    //FT_HANDLE handleb;
-
-    FT_DEVICE_LIST_INFO_NODE devList;
-    // 初始化通道配置
-    ChannelConfig config;
-    // 设置 config 的值，具体根据 libmpsse 的文档或定义进行设置
-    config.ClockRate = 1000000;
-    config.LatencyTimer= 255;
-    config.configOptions = \
-    SPI_CONFIG_OPTION_MODE0 | SPI_CONFIG_OPTION_CS_DBUS3 | SPI_CONFIG_OPTION_CS_ACTIVELOW;
-    config.Pin = 0xFFFFFFFF;/*FinalVal-FinalDir-InitVal-InitDir (for dir 0=in, 1=out)*/
-
-    DWORD numChannels;
-    unsigned int  status = SPI_GetNumChannels(&numChannels);
-    if (status != 0) {
-        LibWTM2100WB::print("Error getting the number of SPI channels.");
-        Cleanup_libMPSSE();
-        s_libraryMPSSE->unload();
-    }
-    LibWTM2100WB::print("Number of SPI channels: %d", numChannels);
-
-    if (numChannels > 0) {
-        for (int i = 0; i < numChannels; i++) {
-            status = SPI_GetChannelInfo(i, &devList);
-            LibWTM2100WB::print("Information on channel number %d :", i);
-            /* print the dev info */
-            LibWTM2100WB::print("  Flags=0x%x", devList.Flags);
-            LibWTM2100WB::print("  Type=0x%x", devList.Type);
-            LibWTM2100WB::print("  ID=0x%x", devList.ID);
-            LibWTM2100WB::print("  LocId=0x%x", devList.LocId);
-            LibWTM2100WB::print("  SerialNumber=%s", devList.SerialNumber);
-            LibWTM2100WB::print("  Description=%s", devList.Description);
-            LibWTM2100WB::print("  ftHandle=0x%x", devList.ftHandle);
-        }
-    }
-
-    // 以下是GPIO相关的调用示例
-    status = SPI_OpenChannel(0, &handlea); // 假设选择第1个SPI通道
-    if (status != FT_OK) {
-        LibWTM2100WB::print("Error opening SPI channel.");
-        Cleanup_libMPSSE();
-        s_libraryMPSSE->unload();
-        return 1;
-    }
-
-    FT_HANDLE handleb;
-    status = SPI_OpenChannel(1, &handleb); // 假设选择第2个SPI通道
-    if (status != FT_OK) {
-        LibWTM2100WB::print("Error opening SPI channel.");
-        Cleanup_libMPSSE();
-        s_libraryMPSSE->unload();
-        return 1;
-    }
-
-    status = SPI_InitChannel(handlea, &config);
-    if (status != FT_OK) {
-        LibWTM2100WB::print("Error initializing channel.");
-        Cleanup_libMPSSE();
-        s_libraryMPSSE->unload();
-        Q_EMIT completed();
-        return 1;
-    }
-
-    ChannelConfig configbd;
-    configbd.ClockRate = 5000;
-    configbd.LatencyTimer= 255;
-    configbd.configOptions = \
-    SPI_CONFIG_OPTION_MODE0 | SPI_CONFIG_OPTION_CS_DBUS3 | SPI_CONFIG_OPTION_CS_ACTIVELOW;
-
-    configbd.Pin = 0xFFFFFFFF;/*FinalVal-FinalDir-InitVal-InitDir (for dir 0=in, 1=out)*/
-    status = SPI_InitChannel(handleb, &configbd);
-    if (status != FT_OK) {
-        LibWTM2100WB::print("Error initializing channel.");
-        Cleanup_libMPSSE();
-        s_libraryMPSSE->unload();
-        Q_EMIT completed();
-        return 1;
-    }
-
-    // 设置AC0、AC1
-    uint8_t dir = 0xFF; // 方向，每一位代表一个引脚，1表示输出，0表示输入
-    uint8_t value = 0xFF; // 输出值，每一位代表一个引脚的输出值
-    status = FT_WriteGPIO(handlea, dir, value);
-    if (status != FT_OK) {
-        LibWTM2100WB::print("Error writing to GPIO.");
-        SPI_CloseChannel(handlea);
-        Cleanup_libMPSSE();
-        s_libraryMPSSE->unload();
-        return 1;
-    }
-    status = FT_WriteGPIO(handleb, dir, value);
-    if (status != FT_OK) {
-        LibWTM2100WB::print("Error writing to GPIO.\n");
-        SPI_CloseChannel(handleb);
-        Cleanup_libMPSSE();
-        // FreeLibrary(hLib);
-        return 1;
-    }
-
-    char command[50];
-                
-    char action[7];
-    char port1 , port2;
-    int pin;
-
-    uint16_t val_a = 0xFFFF;
-    uint16_t val_b = 0xFFFF;
-    QString binPath;
-    LibWTM2100WB::print("\nEnter 'help' to find out how to use");
-    while (1) {
-        LibWTM2100WB::print("Enter command (e.g. 'help', 'set ac0', 'clr ac0', 'readid fl0', ...): ");
-        cin.getline(command, sizeof(command));
-
-        // 移除换行符
-        command[strcspn(command, "\n")] = '\0';
-
-        // 退出循环的条件
-        if (strcmp(command, "exit") == 0) {
-            break;
-        }
-        if(strcmp(command, "help") == 0 ) {
-            LibWTM2100WB::print("-----------------------------------------------------------");
-            LibWTM2100WB::print("command                explanation");
-            LibWTM2100WB::print("set ad5                means set pin ad5 high level");
-            LibWTM2100WB::print("clr ad5                means set pin ad5 low level");
-            LibWTM2100WB::print("rst ac0                means reset ft2232");
-            LibWTM2100WB::print("exit                   means exit the command line");
-            LibWTM2100WB::print("erase fl0              means erase flash0");
-            LibWTM2100WB::print("write fl0              means write flash0");
-            LibWTM2100WB::print("read fl0               means read flash0");
-            LibWTM2100WB::print("readid fl0             means read the flash0 device ID");
-            LibWTM2100WB::print("-----------------------------------------------------------");
-        }
-        
-        int parsed = sscanf(command, "%s %c%c%d", action, &port1, &port2, &pin);
-
-        if (parsed == 4) {
-            if (strcmp(action, "set") == 0) {
-                if(port1=='a'){
-                    if(port2=='d'){
-                        val_a |= (1<<pin);
-                    }
-                    if(port2=='c'){
-                        val_a |= (1<<(pin+8));
-                    }
-                }
-                if(port1=='b'){
-                    if(port2=='d'){
-                       val_b |= (1<<pin); 
-                    }
-                    if(port2=='c'){
-                       val_b |= (1<<(pin+8)); 
-                    }
-                }
-                Mid_SetGPIOLow(handlea, val_a&0xff, dir);
-                Mid_SetGPIOLow(handleb, val_b&0xff, dir);
-                FT_WriteGPIO(handlea, dir, val_a>>8);
-                FT_WriteGPIO(handleb, dir, val_b>>8);
-                LibWTM2100WB::print("Set %c%c%d high 0x%x 0x%x.\n", port1,port2, pin , val_a, val_b);
-            } else if (strcmp(action, "clr") == 0) {
-                if(port1=='a'){
-                    if(port2=='d'){
-                        val_a &=  ~(1<<pin);
-                    }
-                    if(port2=='c'){
-                        val_a &= ~(1<<(pin+8));
-                    }
-                }
-                if(port1=='b'){
-                    if(port2=='d'){
-                       val_b &= ~(1<<pin); 
-                    }
-                    if(port2=='c'){
-                       val_b &= ~(1<<(pin+8)); 
-                    }
-                }
-
-                Mid_SetGPIOLow(handlea, val_a&0xff, dir);
-                Mid_SetGPIOLow(handleb, val_b&0xff, dir);
-                FT_WriteGPIO(handlea, dir, val_a>>8);
-                FT_WriteGPIO(handleb, dir, val_b>>8);
-                LibWTM2100WB::print("Clear %c%c%d low 0x%x 0x%x.\n", port1,port2, pin, val_a, val_b);
-            } 
-            else if (strcmp(action, "rst") == 0) {
-                Mid_CyclePort(handlea);
-                Mid_CyclePort(handleb);
-                LibWTM2100WB::print("Mid_CyclePort \r\n");
-                break;
-            }
-            else if (strcmp(action, "erase") == 0 && port1 == 'f' && port2 == 'l') {
-                LibWTM2100WB::print("Erase FLASH pin%d\r\n", pin);
-                Mid_SetGPIOLow(handlea, pin&0xff, dir);
-
-                this_thread::sleep_for(chrono::milliseconds(100));
-                w25qxx_erase_byte(handleb);
-                this_thread::sleep_for(chrono::milliseconds(2000));
-            }
-            else if (strcmp(action, "write") == 0 && port1 == 'f' && port2 == 'l') {
-                LibWTM2100WB::print("Write FLASH pin%d\r\n", pin);
-                Mid_SetGPIOLow(handlea, pin&0xff, dir);
-
-                this_thread::sleep_for(chrono::milliseconds(100));
-                w25qxx_write_byte(handleb, binPath);
-                this_thread::sleep_for(chrono::milliseconds(2000));
-            }
-            else if (strcmp(action, "read") == 0 && port1 == 'f' && port2 == 'l') {
-                LibWTM2100WB::print("read FLASH pin%d\r\n", pin);
-                Mid_SetGPIOLow(handlea, pin&0xff, dir);
-
-                this_thread::sleep_for(chrono::milliseconds(100));
-                w25qxx_read_byte(handleb);
-                this_thread::sleep_for(chrono::milliseconds(2000));
-            }
-            else if (strcmp(action, "readid" ) == 0 && port1 == 'f' && port2 == 'l') {
-                LibWTM2100WB::print("readID FLASH pin%d\r\n", pin);
-                Mid_SetGPIOLow(handlea, pin&0xff, dir);
-
-                this_thread::sleep_for(chrono::milliseconds(100));
-                w25qxx_read_id(handleb);
-                this_thread::sleep_for(chrono::milliseconds(2000));
-            }
-            
-            else {
-                LibWTM2100WB::print("Invalid action: %s %c%c%d\n", action, port1, port2, pin);
-            }
-        }
-
-        else if (parsed == 1 && strcmp(action, "help") == 0){
-            
-        }
-        
-        else {
-            LibWTM2100WB::print("Invalid command: %s\n", command);
-        }
-    }
-
-    // 关闭SPI通道
-    SPI_CloseChannel(handlea);
-    SPI_CloseChannel(handleb);
-
-    // 调用清理函数
-    Cleanup_libMPSSE();
-
-    // 卸载DLL库
-    s_libraryMPSSE->unload();
-    LibWTM2100WB::print("End");
-
-    return 0;
-}
-
-uint8_t FlashThread::w25qxx_read_id(FT_HANDLE handle)
-{
-    //#if 0
-                // Manufacturer/Device ID
-                // 查表8.1.2 先write(0x90), 然后write(两个随机值), ，再write(0x00), 最后read()一次
-                uint8_t id[2] = {0};
-                // SPI_Write(FT_HANDLE handle, uint8_t *buffer, uint32_t sizeToTransfer, uint32_t *sizeTransferred, uint32_t transferOptions)
-            //   SPI_ReadWrite(FT_HANDLE handle, uint8_t *inBuffer, uint8_t *outBuffer, uint32_t sizeToTransfer, uint32_t *sizeTransferred, uint32_t transferOptions)   
-                //发送0x90，读取厂商ID和设备ID
-                uint8_t temp = 0x90;
-                uint32_t sizeTransferred;
-                SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-                
-                //发送24位地址(3个字节)  前面两个字节可以任意，第三个字节必须是0x00
-                // spi_read_writeByte(0x00);
-                // spi_read_writeByte(0x00);
-                temp = 0x00;
-                SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-                SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-                // spi_read_writeByte(0x00);//一定是0x00
-                temp = 0x00;
-                SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-                
-                // id |= spi_read_writeByte(0xFF)<<8; //id：0xEF16  厂商ID：0xEF    
-                // id |= spi_read_writeByte(0xFF);    //设备ID：0x16  
-
-                // SPI_ReadWrite(handleb, &temp, &id, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-                SPI_Read(handle, id, 2, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
-                LibWTM2100WB::print("ID0:0x%x  ", id[0]);
-                // SPI_ReadWrite(handleb, &temp, &id, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
-                // SPI_Read(handle, id, 2, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
-                LibWTM2100WB::print("ID1:0x%x \r\n", id[1]);
-    //#endif
-    #if 0
-            // JEDEC ID
-            // 查表8.1.2 先wirte(0x9F), 然后read()三次
-            uint8_t id = 0;
-            uint8_t temp = 0x9f;
-            uint32_t sizeTransferred;
-            SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-
-            SPI_Read(handle, &id, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-            printf("byte2:0x%x  ", id);
-            SPI_Read(handle, &id, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-            printf("byte3:0x%x  ", id);
-            SPI_Read(handle, &id, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
-            printf("byte4:0x%x \r\n", id);
-    #endif
-    #if 0 
-            // Release Power-down/ID
-            // 查表8.1.2 先write(0xAB), 然后write(三个随机值), 最后read()一次
-            uint8_t id = 0;
-            uint8_t temp = 0xAB;
-            uint32_32 sizeTransferred;
-            SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-
-            temp = 0x55;
-            SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-            SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-            SPI_Write(handle, &temp, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-
-            SPI_Read(handle, &id, 1, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES|SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
-            printf("byte4:0x%x \r\n", id);
-    #endif
-            
-    return id[1];
 }
 
 uint8_t FlashThread::w25qxx_write_byte(FT_HANDLE handle, const QString &filePath)
@@ -1377,9 +939,9 @@ bool FlashThread::w25qxx_verify_byte(FT_HANDLE handle)
         {
             if(readbuffer[j] != pageBuffer[j])
             {
-                LibWTM2100WB::print("校验错误-错误原因: 第%d个字节错误", i*256+j+1);
+                LibWTM2100WB::print("Check failed-reason: The number of%d failed", i*256+j+1);
                 LibWTM2100WB::print("srcData:0x%x, readData:0x%x", pageBuffer[j], readbuffer[j]);
-                QString verifyData0 = QString("校验错误-错误原因: 第%1个字节错误").arg(i*256+j+1);
+                QString verifyData0 = QString("Check failed-reason: The number of%1 failed").arg(i*256+j+1);
                 emit logMessage(verifyData0);
 
                 return false;
