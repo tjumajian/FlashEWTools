@@ -24,7 +24,6 @@ SOURCES += \
 HEADERS += \
     include/LibWTM2100WB.h \
     include/Settings.h \
-    include/ftd2xx.h \
     include/libMPSSE_spi.h \
     include/FlashThread.h
 
