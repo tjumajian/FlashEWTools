@@ -1,0 +1,5 @@
+{
+    "stage": "Flash",
+    "tunnelDllPath": "libTunnel_64.dll",
+    "MPSSEDllPath": "libMPSSE.dll"
+}
