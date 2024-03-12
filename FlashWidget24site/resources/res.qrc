@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/images">
+        <file alias="flash_ico">icon.ico</file>
+    </qresource>
+</RCC>

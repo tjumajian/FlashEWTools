@@ -14,6 +14,7 @@ FlashWindow::FlashWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::FlashWindow)
 {
+    setWindowIcon(QIcon(":/images/flash_ico"));
     ui->setupUi(this);
     createWidgets();
     createMenu();

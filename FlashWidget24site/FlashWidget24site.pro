@@ -24,6 +24,9 @@ HEADERS += \
 FORMS += \
     flashwindow.ui
 
+RESOURCES += \
+            resources/res.qrc
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
@@ -37,3 +40,6 @@ LIBS += -L$$OUT_PWD/../lib/ -lWTM2100WBFlash
 PRE_TARGETDEPS += $$OUT_PWD/../lib/libWTM2100WBFlash.a
 POST_TARGETDEPS += $$OUT_PWD/../lib/libWTM2100WBFlash.a
 }
+
+DISTFILES += \
+    resources/icon.ico
