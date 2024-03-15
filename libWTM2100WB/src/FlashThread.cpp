@@ -638,6 +638,7 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     }
     else
     {
+        emit failedSignal(false);
         LibWTM2100WB::print("flash%d erase successfully!\r\n", pin2+1);
         emit logMessage(QString("flash%1 erase successfully!").arg(pin2+1));
     }
@@ -679,6 +680,7 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     }
     else
     {
+        emit failedSignal(false);
         LibWTM2100WB::print("flash%d program successfully!\r\n", pin2+1);
         emit logMessage(QString("flash%1 program successfully!").arg(pin2+1));
     }
@@ -711,6 +713,7 @@ bool FlashThread::configSPI(int pin1, int pin2, const QString &path)
     }
     else
     {
+        emit failedSignal(false);
         LibWTM2100WB::print("flash%d check successfully!\r\n", pin2+1);
         emit logMessage(QString("flash%1 check successfully!").arg(pin2+1));
     }
