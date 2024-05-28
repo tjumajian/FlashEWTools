@@ -710,10 +710,10 @@ void FlashWindow::onHelpButton()
     QTextEdit* label2 = new QTextEdit(aboutPage);
     label2->setText("Tool Name:       Flash Erase/Write Tool\n"
                     "Version:         1.1\n"
-                    "Author:          xxxx xx\n"
-                    "Company:         xxxxxxxxxxx\n"
-                    "Email:           xxxxxxxxxxxxxxxx\n"
-                    "Address:         Tianjin, China\n"
+                    "Author:          Jian Ma\n"
+                    "Company:         Witmem Company\n"
+                    "Email:           jian.ma@witintech.com\n"
+                    "Address:         Tianjin\n"
                     "Introduction:    This tool helps erase/write one or more flash site you choose. You can click the site window to choose or cancel the testing sites. Also, clicking buttons below is equal.\n"
                     );
     label2->setAlignment(Qt::AlignLeft | Qt::AlignTop);
@@ -861,7 +861,7 @@ void FlashWindow::logPrint2(const QString& message)
         format.setForeground(Qt::blue);
         cursor.mergeCharFormat(format);
     }
-    if (message.contains("successful")) {
+    if (message.contains("成功")) {
         QTextCharFormat format;
         format.setForeground(Qt::green);
         cursor.mergeCharFormat(format);
@@ -911,6 +911,8 @@ QString FlashWindow::findBinFile()
 
 void FlashWindow::onThreadFinished(bool is_finished)
 {
+    // // 恢复窗口操作
     // setEnabled(is_finished);
+    // // 恢复鼠标光标
     // QApplication::restoreOverrideCursor();
 }

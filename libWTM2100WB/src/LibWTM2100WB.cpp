@@ -42,6 +42,6 @@ void print(const char *format, ...)
     QFile f(logFileName());
     f.open(QIODevice::Append);
     f.write(toLogData(log));
-    f.write("\n");
+    f.write("\r\n");
 }
 };
